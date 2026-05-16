@@ -8,6 +8,7 @@ import axios, {
 } from 'axios';
 import { API_CONFIG } from '../constants/config';
 import type { ApiError } from '../types/api';
+import { Platform } from 'react-native';
 
 /**
  * Create a pre-configured Axios instance.
@@ -21,11 +22,39 @@ function createApiClient(baseURL: string): AxiosInstance {
     },
   });
 
-  // Request interceptor for logging in dev
+  // Request interceptor for logging in dev and Vercel proxy rewrite
   client.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
+      // Intercept and proxy requests if running on the web
+      if (Platform.OS === 'web') {
+        const url = config.url || '';
+        const base = config.baseURL || '';
+        const fullPath = url.startsWith('http') ? url : `${base}${url}`;
+
+        try {
+          const targetUrlObj = new URL(fullPath);
+          
+          // Manually append Axios params to the URL so they get passed to the proxy
+          if (config.params) {
+            Object.keys(config.params).forEach(key => {
+              if (config.params[key] !== undefined) {
+                targetUrlObj.searchParams.append(key, config.params[key]);
+              }
+            });
+            // Clear Axios params to prevent double-appending
+            config.params = {};
+          }
+
+          // Rewrite the request to hit the local proxy
+          config.baseURL = ''; 
+          config.url = `/api/proxy?targetUrl=${encodeURIComponent(targetUrlObj.toString())}`;
+        } catch (e) {
+          console.warn('[API] Failed to construct proxy URL:', e);
+        }
+      }
+
       if (__DEV__) {
-        console.log(`[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+        console.log(`[API] ${config.method?.toUpperCase()} ${config.baseURL || ''}${config.url}`);
       }
       return config;
     },
