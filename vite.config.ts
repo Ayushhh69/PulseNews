@@ -14,10 +14,5 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
-  optimizeDeps: {
-    esbuildOptions: {
-      resolveExtensions: ['.web.js', '.web.jsx', '.web.ts', '.web.tsx', '.js', '.jsx', '.ts', '.tsx'],
-    },
-  },
 });
 
