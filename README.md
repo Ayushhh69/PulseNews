@@ -1,97 +1,104 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# PulseNews — Smart News Aggregator
 
-# Getting Started
+A production-grade React Native CLI news aggregator app built with TypeScript, Redux Toolkit, and no third-party UI libraries. Fetches articles from multiple APIs (NewsAPI + GNews), supports offline bookmarks, infinite scrolling, dark mode, and read history.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+### Core
+- **Home Feed** — Browse top headlines with category filters (General, Business, Tech, Science, Health, Sports, Entertainment)
+- **Infinite Scrolling** — Load more articles as you scroll with optimized FlatList
+- **Pull-to-Refresh** — Swipe down to fetch latest news
+- **Search** — Debounced search across both APIs with recent search history
+- **Article Detail** — Full article view with bookmark, share, and open in browser
+- **Offline Bookmarks** — Save articles for offline reading with redux-persist
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### Bonus
+- **Dark Mode** — System detection + manual toggle (light/dark/system)
+- **Read History** — Visual indicator for previously read articles
+- **Recently Viewed Cache** — Last 20 viewed articles cached
+- **Push Notification Simulation** — In-app breaking news banner
+- **Resume Position** — Restores category and scroll position on restart
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Tech Stack
 
-```sh
-# Using npm
-npm start
+| Layer | Technology |
+|-------|-----------|
+| Framework | React Native CLI (no Expo) |
+| Language | TypeScript |
+| State Management | Redux Toolkit + redux-persist |
+| Storage | AsyncStorage |
+| Networking | Axios |
+| Navigation | React Navigation (Native Stack + Bottom Tabs) |
+| UI | Core React Native components only |
 
-# OR using Yarn
-yarn start
+## Architecture
+
+```
+src/
+├── api/              # API service layer (NewsAPI, GNews, Aggregator)
+├── components/       # Reusable UI components (ArticleCard, CategoryFilter, etc.)
+├── constants/        # Config, colors, categories
+├── hooks/            # Custom hooks (useDebounce, useTheme, typed Redux hooks)
+├── navigation/       # React Navigation setup (Stacks + Tabs)
+├── screens/          # Screen components (Home, Search, Bookmarks, ArticleDetail)
+├── store/            # Redux store, slices, root reducer
+├── types/            # TypeScript interfaces
+└── utils/            # Utilities (deduplication, date formatting, storage)
 ```
 
-## Step 2: Build and run your app
+## Key Technical Decisions
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### 1. Dual API Aggregation
+Both NewsAPI and GNews are fetched in parallel via `Promise.allSettled`. If one fails, the app gracefully degrades to show results from the other. Articles are deduplicated by URL and title similarity.
 
-### Android
+### 2. Selective Persistence
+Only `bookmarks`, `settings`, and `history` slices are persisted. Feed data (`news`, `search` results) are fetched fresh on launch to ensure up-to-date content.
 
-```sh
-# Using npm
-npm run android
+### 3. FlatList Performance
+- `React.memo` with custom comparator on `ArticleCard`
+- `useCallback` for all FlatList handlers
+- `removeClippedSubviews`, `maxToRenderPerBatch(10)`, `windowSize(5)`
+- `onScrollToIndexFailed` graceful fallback
 
-# OR using Yarn
-yarn android
+### 4. Debounced Search
+Search input is debounced (300ms) to prevent excessive API calls. Results use the same infinite scroll pattern as the home feed.
+
+### 5. App Lifecycle
+`AppState` listener handles foreground/background transitions. State is automatically persisted by redux-persist on background.
+
+## Setup & Run
+
+### Prerequisites
+- Node.js 18+
+- JDK 17
+- Android Studio with SDK
+- `ANDROID_HOME` and `JAVA_HOME` environment variables
+
+### Install
+```bash
+cd PulseNews
+npm install
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+### Configure API Keys
+Edit `src/constants/config.ts` and replace:
+```typescript
+API_KEY: 'YOUR_NEWSAPI_KEY_HERE',  // Get from https://newsapi.org
+API_KEY: 'YOUR_GNEWS_KEY_HERE',    // Get from https://gnews.io
 ```
 
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
+### Run
+```bash
+npx react-native run-android
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## Improvements With More Time
 
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+1. **WebView Article Reader** — In-app article reading instead of opening browser
+2. **Image Caching** — Use react-native-fast-image for efficient image loading
+3. **Unit Tests** — Jest + React Testing Library for component and Redux tests
+4. **E2E Tests** — Detox for end-to-end testing
+5. **Error Boundary** — React error boundaries for graceful crash recovery
+6. **Analytics** — Track user engagement patterns
+7. **Background Fetch** — True background notifications with Headless JS
+8. **Localization** — Multi-language support with i18n
