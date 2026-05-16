@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PulseNews</title>
+    <style>
+      /* Ensure the React Native app fills the entire screen */
+      html, body, #root {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      /* Optional: Basic dark mode background default to prevent white flash */
+      body {
+        background-color: #000;
+      }
+      #root {
+        display: flex;
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.web.js"></script>
+  </body>
+</html>
